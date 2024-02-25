@@ -11,7 +11,9 @@ namespace Assets.Scripts.Smile.Maze
         West = 4,
         East = 8,
 
-        Top = 16,
-        Bottom = 32,
+        StairToNorth = 16,
+        StairToSouth = 32,
+        StairToWest = 64,
+        StairToEast = 128,
     }
 }

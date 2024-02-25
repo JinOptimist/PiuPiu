@@ -55,10 +55,18 @@ public class MazeBuilder : MonoBehaviour
             BuildWallEastWest(cell.X, cell.Y);
         }
 
-        if (wall.HasFlag(WallTypes.Top))
-        {
-            BuildRoof(cell.X, cell.Y);
-        }
+        //if (wall.HasFlag(WallTypes.StairToNorth))
+        //{
+        //    BuildStair(cell.X, cell.Y);
+        //}
+
+        //if (!wall.HasFlag(WallTypes.StairToNorth)
+        //    && !wall.HasFlag(WallTypes.StairToEast)
+        //    && !wall.HasFlag(WallTypes.StairToSouth)
+        //    && !wall.HasFlag(WallTypes.StairToWest))
+        //{
+        //    BuildRoof(cell.X, cell.Y);
+        //}
     }
 
     private void BuildWallEastWest(int x, int y)

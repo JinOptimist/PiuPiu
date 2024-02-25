@@ -105,8 +105,10 @@ public class MazeGenerator : MonoBehaviour
                     oppositeCell.Wall = oppositeCell.Wall.Remove(WallTypes.West);
                 }
                 break;
-            case WallTypes.Top:
-            case WallTypes.Bottom:
+            case WallTypes.StairToNorth:
+            case WallTypes.StairToEast:
+            case WallTypes.StairToSouth:
+            case WallTypes.StairToWest:
                 throw new NotImplementedException();
             default:
                 break;
