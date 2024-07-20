@@ -1,3 +1,4 @@
+using Assets.GameData;
 using MazeGenerator;
 using MazeGenerator.Models.MazeModels;
 using System;
@@ -32,6 +33,10 @@ public class MazeBuilder : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        Length = MazeParameter.Length;
+        Width = MazeParameter.Width;
+        Height = MazeParameter.Height;
+
         var generator = new Generator();
         var maze = generator.Generate(Length, Width, Height,
             startPoint: new System.Numerics.Vector3(0, 0, Height - 1),
@@ -39,7 +44,7 @@ public class MazeBuilder : MonoBehaviour
             );
         zMargin = -1 * (maze.Width + 1) * WALL_SIZE;
         BuildMaze(maze);
-        // MovePlaeyerToStartPoint();
+        MovePlaeyerToStartPoint();
     }
 
     private void MovePlaeyerToStartPoint()
@@ -73,8 +78,24 @@ public class MazeBuilder : MonoBehaviour
         var room = new GameObject($"Room[{cell.X}, {cell.Y}, {cell.Z}]");
         if (cell.InnerPart != InnerPart.None)
         {
-            var stair = BuildStair(cell.X, cell.Y, cell.Z, cell.InnerPart);
-            stair.transform.SetParent(room.transform, false);
+            switch (cell.InnerPart)
+            {
+                case InnerPart.StairFromSouthToNorth:
+                case InnerPart.StairFromNorthToSouth:
+                case InnerPart.StairFromWestToEast:
+                case InnerPart.StairFromEastToWest:
+                    var stair = BuildStair(cell.X, cell.Y, cell.Z, cell.InnerPart);
+                    stair.transform.SetParent(room.transform, false);
+                    break;
+                case InnerPart.Exit:
+                    var exit = BuildExit(cell.X, cell.Y, cell.Z);
+                    exit.transform.SetParent(room.transform, false);
+                    break;
+                default:
+                    Debug.LogWarning($"Uknown InnetPart {cell.InnerPart}");
+                    break;
+            }
+            
         }
 
         var wallType = cell.Wall;
@@ -208,14 +229,15 @@ public class MazeBuilder : MonoBehaviour
         return stair;
     }
 
-    private void BuildExit(int x, int y, int z)
+    private GameObject BuildExit(int x, int y, int z)
     {
-        var stair = Instantiate(StairTemplate);
+        var exit = Instantiate(ExitTemplate);
 
-        stair.transform.position = new Vector3(
+        exit.transform.position = new Vector3(
             DefaultXPosition(x),
             DefaultYPosition(z),
             DefaultZPosition(y));
+        return exit;
     }
 
     private GameObject CreateBaseWall(int x, int y, int z)

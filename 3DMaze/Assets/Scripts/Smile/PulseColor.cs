@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class PulseColor : MonoBehaviour
@@ -15,8 +13,6 @@ public class PulseColor : MonoBehaviour
         cubeRenderer = GetComponent<Renderer>();
     }
 
-
-    // Update is called once per frame
     void Update()
     {
         // Используем Mathf.PingPong для получения значения от 0 до 1, меняющегося со временем
