@@ -15,6 +15,7 @@ public class MazeBuilder : MonoBehaviour
 
     public GameObject WallTemplate;
     public GameObject StairTemplate;
+    public GameObject ExitTemplate;
 
     public GameObject Player;
 
@@ -38,14 +39,14 @@ public class MazeBuilder : MonoBehaviour
             );
         zMargin = -1 * (maze.Width + 1) * WALL_SIZE;
         BuildMaze(maze);
-        MovePlaeyerToStartPoint();
+        // MovePlaeyerToStartPoint();
     }
 
     private void MovePlaeyerToStartPoint()
     {
         Player.transform.position = new Vector3(
             HALF_WALL_SIZE,
-            Width * WALL_SIZE + WALL_SIZE,
+            Height * WALL_SIZE + WALL_SIZE,
             zMargin);
 
     }
@@ -115,7 +116,30 @@ public class MazeBuilder : MonoBehaviour
             }
         }
 
+        //WriteTextToRoom(room, cell);
+
         return room;
+    }
+
+    private void WriteTextToRoom(GameObject room, Cell cell)
+    {
+        //foreach (var wall in room
+        //    .GetComponentsInChildren<Transform>()
+        //    .Where(x=>x.name == "Wall(Clone)"))
+        //{
+        //    var baseTextObject = wall
+        //        .transform.Find("Canvas")
+        //        .transform.Find("Text");
+        //    var textMeshPro = baseTextObject.GetComponent<TextMeshProUGUI>();
+        //    if (cell.X == 0 && cell.Y == 0 && cell.Z == 0)
+        //    {
+        //        textMeshPro.text = $"Exit!";
+        //    }
+        //    else
+        //    {
+        //        textMeshPro.text = $"[{cell.X}, {cell.Y}, {cell.Z}]";
+        //    }
+        //}
     }
 
     private GameObject BuildWallEastWest(int x, int y, int z)
@@ -123,9 +147,9 @@ public class MazeBuilder : MonoBehaviour
         var wall = CreateBaseWall(x, y, z);
         wall.transform.Rotate(0, 180, 0);
         wall.transform.position = new Vector3(
-            x * WALL_SIZE,
-            z * WALL_SIZE + WALL_SIZE / 2,
-            y * WALL_SIZE + zMargin);
+            DefaultXPosition(x) - HALF_WALL_SIZE, //x * WALL_SIZE,
+            DefaultYPosition(z),
+            DefaultZPosition(y));
 
         return wall;
     }
@@ -136,9 +160,9 @@ public class MazeBuilder : MonoBehaviour
         wall.transform.Rotate(0, 90, 0);
 
         wall.transform.position = new Vector3(
-            x * WALL_SIZE + HALF_WALL_SIZE,
-            z * WALL_SIZE + WALL_SIZE / 2,
-            (y - 1) * WALL_SIZE + HALF_WALL_SIZE + zMargin);
+            DefaultXPosition(x),
+            DefaultYPosition(z),
+            DefaultZPosition(y) - HALF_WALL_SIZE);
         return wall;
     }
 
@@ -149,9 +173,9 @@ public class MazeBuilder : MonoBehaviour
         roof.transform.Rotate(0, 0, 90);
 
         roof.transform.position = new Vector3(
-            x * WALL_SIZE + HALF_WALL_SIZE,
-            z * WALL_SIZE + WALL_SIZE,
-            y * WALL_SIZE + zMargin);
+            DefaultXPosition(x),
+            DefaultYPosition(z) + HALF_WALL_SIZE,
+            DefaultZPosition(y));
 
         return roof;
     }
@@ -177,11 +201,21 @@ public class MazeBuilder : MonoBehaviour
         }
 
         stair.transform.position = new Vector3(
-            x * WALL_SIZE + (WALL_SIZE / 2),
-            z * WALL_SIZE + WALL_SIZE / 2,
-            y * WALL_SIZE + zMargin);
+            DefaultXPosition(x),
+            DefaultYPosition(z),
+            DefaultZPosition(y));
 
         return stair;
+    }
+
+    private void BuildExit(int x, int y, int z)
+    {
+        var stair = Instantiate(StairTemplate);
+
+        stair.transform.position = new Vector3(
+            DefaultXPosition(x),
+            DefaultYPosition(z),
+            DefaultZPosition(y));
     }
 
     private GameObject CreateBaseWall(int x, int y, int z)
@@ -193,5 +227,20 @@ public class MazeBuilder : MonoBehaviour
         var textMeshPro = baseTextObject.GetComponent<TextMeshProUGUI>();
         textMeshPro.text = $"[{x}, {y}, {z}]";
         return wall;
+    }
+
+    private float DefaultXPosition(int x)
+    {
+        return x * WALL_SIZE + HALF_WALL_SIZE;
+    }
+    
+    private float DefaultYPosition(int z)
+    {
+        return z * WALL_SIZE + HALF_WALL_SIZE;
+    }
+    
+    private float DefaultZPosition(int y)
+    {
+        return y * WALL_SIZE + zMargin;
     }
 }
