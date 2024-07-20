@@ -20,7 +20,9 @@ public class MazeBuilder : MonoBehaviour
     void Start()
     {
         var generator = new Generator();
-        var maze = generator.Generate(5, 4, 3, 42);
+        var maze = generator.Generate(5, 4, 3,
+            startPoint: new System.Numerics.Vector3(0, 0, 0),
+            seed: 42);
         zMargin = -1 * (maze.Width + 1) * WALL_SIZE;
         BuildMaze(maze);
     }
@@ -37,10 +39,31 @@ public class MazeBuilder : MonoBehaviour
                 }
             }
         }
+
+        // Build only first floor
+        //for (int y = 0; y < maze.Width; y++)
+        //{
+        //    for (int x = 0; x < maze.Length; x++)
+        //    {
+        //        BuildRoom(maze[x, y, 0]);
+        //    }
+        //}
     }
 
     private void BuildRoom(Cell cell)
     {
+        if (cell.InnerPart != InnerPart.None)
+        {
+            BuildStair(cell.X, cell.Y, cell.Z, cell.InnerPart);
+        }
+
+        // TODO Create an Enter to the maze
+        // For now just a HACK IT ^_^
+        if (cell.X == 0 && cell.Y == 0 && cell.Z == 0)
+        {
+            return;
+        }
+
         var wall = cell.Wall;
         if (wall.HasFlag(WallType.North))
         {
@@ -58,19 +81,13 @@ public class MazeBuilder : MonoBehaviour
         {
             BuildWallEastWest(cell.X, cell.Y, cell.Z);
         }
+        if (wall.HasFlag(WallType.Roof))
+        {
+            BuildRoof(cell.X, cell.Y, cell.Z);
+        }
 
-        //if (wall.HasFlag(WallType.StairToNorth))
-        //{
-        //    BuildStair(cell.X, cell.Y);
-        //}
 
-        //if (!wall.HasFlag(WallType.StairToNorth)
-        //    && !wall.HasFlag(WallType.StairToEast)
-        //    && !wall.HasFlag(WallType.StairToSouth)
-        //    && !wall.HasFlag(WallType.StairToWest))
-        //{
-        //    BuildRoof(cell.X, cell.Y);
-        //}
+
     }
 
     private void BuildWallEastWest(int x, int y, int z)
@@ -86,14 +103,14 @@ public class MazeBuilder : MonoBehaviour
     {
         var wall = Instantiate(Wall);
         wall.transform.Rotate(0, 90, 0);
-        
+
         wall.transform.position = new Vector3(
             x * WALL_SIZE + HALF_WALL_SIZE,
             z * WALL_SIZE + WALL_SIZE / 2,
             (y - 1) * WALL_SIZE + HALF_WALL_SIZE + zMargin);
     }
 
-    private void BuildRoof(int x, int y)
+    private void BuildRoof(int x, int y, int z)
     {
         var wall = Instantiate(Wall);
         wall.transform.Rotate(0, 0, 90);
@@ -101,16 +118,33 @@ public class MazeBuilder : MonoBehaviour
         var half = WALL_SIZE / 2;
         wall.transform.position = new Vector3(
             x * WALL_SIZE + half,
-            WALL_SIZE,
+            z * WALL_SIZE + WALL_SIZE,
             y * WALL_SIZE + zMargin);
     }
 
-    private void BuildStair(int x, int y)
+    private void BuildStair(int x, int y, int z, InnerPart stairType)
     {
         var stair = Instantiate(Stair);
+
+        switch (stairType)
+        {
+            case InnerPart.StairFromSouthToNorth:
+                stair.transform.Rotate(0, 0, 0);
+                break;
+            case InnerPart.StairFromNorthToSouth:
+                stair.transform.Rotate(0, 180, 0);
+                break;
+            case InnerPart.StairFromWestToEast:
+                stair.transform.Rotate(0, 90, 0);
+                break;
+            case InnerPart.StairFromEastToWest:
+                stair.transform.Rotate(0, -90, 0);
+                break;
+        }
+
         stair.transform.position = new Vector3(
             x * WALL_SIZE + (WALL_SIZE / 2),
-            WALL_SIZE / 2,
+            z * WALL_SIZE + WALL_SIZE / 2,
             y * WALL_SIZE + zMargin);
     }
 }
