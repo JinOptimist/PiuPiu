@@ -226,23 +226,23 @@ MonoBehaviour:
   m_SceneHierarchy:
     m_TreeViewState:
       scrollPos: {x: 0, y: 0}
-      m_SelectedIDs: 0e6d0000
-      m_LastClickedID: 27918
-      m_ExpandedIDs: 30f9ffff3cf9ffff12fbffff
+      m_SelectedIDs: dcfaffff
+      m_LastClickedID: -1316
+      m_ExpandedIDs: 30f9ffff12fbffff
       m_RenameOverlay:
         m_UserAcceptedRename: 0
-        m_Name: Wall (1)
-        m_OriginalName: Wall (1)
+        m_Name: 
+        m_OriginalName: 
         m_EditFieldRect:
           serializedVersion: 2
           x: 0
           y: 0
           width: 0
           height: 0
-        m_UserData: -1616
+        m_UserData: 0
         m_IsWaitingForDelay: 0
         m_IsRenaming: 0
-        m_OriginalEventType: 0
+        m_OriginalEventType: 11
         m_IsRenamingFilename: 0
         m_ClientGUIView: {fileID: 5}
       m_SearchString: 
@@ -538,9 +538,9 @@ MonoBehaviour:
   m_PlayAudio: 0
   m_AudioPlay: 0
   m_Position:
-    m_Target: {x: 3.0946002, y: 4.60713, z: 0.4774047}
+    m_Target: {x: 1.5037982, y: 45.270016, z: -43.561108}
     speed: 2
-    m_Value: {x: 3.0946002, y: 4.60713, z: 0.4774047}
+    m_Value: {x: 1.5037982, y: 45.270016, z: -43.561108}
   m_RenderMode: 0
   m_CameraMode:
     drawMode: 0
@@ -587,13 +587,13 @@ MonoBehaviour:
     m_GridAxis: 1
     m_gridOpacity: 0.5
   m_Rotation:
-    m_Target: {x: -0.068560235, y: -0.91546685, z: 0.17683436, w: -0.35496306}
+    m_Target: {x: 0.22317311, y: 0.5226958, z: -0.14399059, w: 0.81012356}
     speed: 2
-    m_Value: {x: -0.06855855, y: -0.9154444, z: 0.17683002, w: -0.35495436}
+    m_Value: {x: 0.22316748, y: 0.52268255, z: -0.14398696, w: 0.8101031}
   m_Size:
-    m_Target: 1.8387567
+    m_Target: 0.8660254
     speed: 2
-    m_Value: 1.8387567
+    m_Value: 0.8660254
   m_Ortho:
     m_Target: 0
     speed: 2
@@ -730,7 +730,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 0}
     m_SelectedIDs: 
     m_LastClickedID: 0
-    m_ExpandedIDs: 00000000f2730000f4730000f6730000f8730000fa730000fc730000
+    m_ExpandedIDs: 00000000f2730000f4730000f6730000f8730000fa730000fc73000000ca9a3b
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -755,9 +755,9 @@ MonoBehaviour:
       m_Icon: {fileID: 0}
       m_ResourceFile: 
   m_ListAreaState:
-    m_SelectedInstanceIDs: 0e6d0000
-    m_LastClickedInstanceID: 27918
-    m_HadKeyboardFocusLastEvent: 1
+    m_SelectedInstanceIDs: dcfaffff
+    m_LastClickedInstanceID: -1316
+    m_HadKeyboardFocusLastEvent: 0
     m_ExpandedInstanceIDs: c6230000
     m_RenameOverlay:
       m_UserAcceptedRename: 0

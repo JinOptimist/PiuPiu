@@ -1,7 +1,9 @@
 using MazeGenerator;
 using MazeGenerator.Models.MazeModels;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Mathematics;
 using UnityEngine;
 using WallType = MazeGenerator.Models.MazeModels.Wall;
 
@@ -9,6 +11,12 @@ public class MazeBuilder : MonoBehaviour
 {
     public GameObject Wall;
     public GameObject Stair;
+
+    public GameObject Player;
+
+    public int Length;
+    public int Width;
+    public int Height;
 
     private const int WALL_SIZE = 4;
     private const int HALF_WALL_SIZE = WALL_SIZE / 2;
@@ -20,11 +28,22 @@ public class MazeBuilder : MonoBehaviour
     void Start()
     {
         var generator = new Generator();
-        var maze = generator.Generate(5, 4, 3,
-            startPoint: new System.Numerics.Vector3(0, 0, 0),
-            seed: 42);
+        var maze = generator.Generate(Length, Width, Height,
+            startPoint: new System.Numerics.Vector3(0, 0, Height - 1),
+            seed: 42
+            );
         zMargin = -1 * (maze.Width + 1) * WALL_SIZE;
         BuildMaze(maze);
+        MovePlaeyerToStartPoint();
+    }
+
+    private void MovePlaeyerToStartPoint()
+    {
+        Player.transform.position = new Vector3(
+            HALF_WALL_SIZE,
+            Width * WALL_SIZE + WALL_SIZE,
+            zMargin);
+
     }
 
     private void BuildMaze(Maze maze)
@@ -57,13 +76,6 @@ public class MazeBuilder : MonoBehaviour
             BuildStair(cell.X, cell.Y, cell.Z, cell.InnerPart);
         }
 
-        // TODO Create an Enter to the maze
-        // For now just a HACK IT ^_^
-        if (cell.X == 0 && cell.Y == 0 && cell.Z == 0)
-        {
-            return;
-        }
-
         var wall = cell.Wall;
         if (wall.HasFlag(WallType.North))
         {
@@ -81,13 +93,19 @@ public class MazeBuilder : MonoBehaviour
         {
             BuildWallEastWest(cell.X, cell.Y, cell.Z);
         }
+
+        // TODO Create an Enter to the maze
+        // For now just a HACK IT ^_^
+        // Do not build one of the roof.
+        // For now it will enter to the maze
+        if (cell.X == 0 && cell.Y == 0 && cell.Z == Height - 1)
+        {
+            return;
+        }
         if (wall.HasFlag(WallType.Roof))
         {
             BuildRoof(cell.X, cell.Y, cell.Z);
         }
-
-
-
     }
 
     private void BuildWallEastWest(int x, int y, int z)
@@ -115,9 +133,8 @@ public class MazeBuilder : MonoBehaviour
         var wall = Instantiate(Wall);
         wall.transform.Rotate(0, 0, 90);
 
-        var half = WALL_SIZE / 2;
         wall.transform.position = new Vector3(
-            x * WALL_SIZE + half,
+            x * WALL_SIZE + HALF_WALL_SIZE,
             z * WALL_SIZE + WALL_SIZE,
             y * WALL_SIZE + zMargin);
     }
