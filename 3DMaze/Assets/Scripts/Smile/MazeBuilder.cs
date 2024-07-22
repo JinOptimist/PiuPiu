@@ -1,5 +1,6 @@
 using Assets.GameData;
 using MazeGenerator;
+using MazeGenerator.Models.GenerationModels;
 using MazeGenerator.Models.MazeModels;
 using System;
 using System.Collections.Generic;
@@ -40,7 +41,9 @@ public class MazeBuilder : MonoBehaviour
         var generator = new Generator();
         var maze = generator.Generate(Length, Width, Height,
             startPoint: new System.Numerics.Vector3(0, 0, Height - 1),
-            seed: 42
+            weights: MazeParameter.GenerationWeights,
+            endPoint: MazeParameter.ExitLocation,
+            seed: MazeParameter.Seed
             );
         zMargin = -1 * (maze.Width + 1) * WALL_SIZE;
         BuildMaze(maze);
