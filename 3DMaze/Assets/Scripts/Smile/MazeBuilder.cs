@@ -1,14 +1,11 @@
-using Assets.GameData;
+using Assets.Scripts.Smile;
 using MazeGenerator;
 using MazeGenerator.Models.GenerationModels;
 using MazeGenerator.Models.MazeModels;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using TMPro;
-using Unity.Mathematics;
 using UnityEngine;
-using static Cinemachine.DocumentationSortingAttribute;
 using WallType = MazeGenerator.Models.MazeModels.Wall;
 
 public class MazeBuilder : MonoBehaviour
@@ -18,6 +15,7 @@ public class MazeBuilder : MonoBehaviour
     public GameObject WallTemplate;
     public GameObject StairTemplate;
     public GameObject ExitTemplate;
+    public GameObject ExitFromChunkTemplate;
 
     public GameObject Player;
 
@@ -25,29 +23,69 @@ public class MazeBuilder : MonoBehaviour
     public int Width;
     public int Height;
 
+    private string materialBasePath = "Materials/WallByLevels";
+
+
     private const int WALL_SIZE = 4;
     private const int HALF_WALL_SIZE = WALL_SIZE / 2;
 
     // will be seted on Start
     private int zMargin;
+    private int fullMazeLevelCount;
+
+    private void Awake()
+    {
+        MovePlaeyerToStartPoint();
+    }
 
     // Start is called before the first frame update
     void Start()
     {
-        Length = MazeParameter.Length;
-        Width = MazeParameter.Width;
-        Height = MazeParameter.Height;
+        if (PlayerPrefs.HasKey("Length"))
+        {
+            Length = PlayerPrefs.GetInt("Length");
+        }
+        if (PlayerPrefs.HasKey("Width"))
+        {
+            Width = PlayerPrefs.GetInt("Width");
+        }
+        if (PlayerPrefs.HasKey("Height"))
+        {
+            Height = PlayerPrefs.GetInt("Height");
+        }
+        int? seed = PlayerPrefs.HasKey("Seed")
+            ? PlayerPrefs.GetInt("Seed")
+            : null;
+        var generationWeightsType = PlayerPrefs.HasKey("GenerationWeightsType")
+            ? (GenerationWeightsType)PlayerPrefs.GetInt("GenerationWeightsType")
+            : GenerationWeightsType.GenericBuilding;
+        var generationWeights = GetGenerationWeights(generationWeightsType);
 
         var generator = new Generator();
         var maze = generator.Generate(Length, Width, Height,
-            startPoint: new System.Numerics.Vector3(0, 0, Height - 1),
-            weights: MazeParameter.GenerationWeights,
-            endPoint: MazeParameter.ExitLocation,
-            seed: MazeParameter.Seed
+            startPoint: new System.Numerics.Vector2(0, 0),
+            weights: generationWeights,
+            seed: seed
             );
-        zMargin = -1 * (maze.Width + 1) * WALL_SIZE;
+        zMargin = -1 * (maze.MaxWidth + 1) * WALL_SIZE;
+        fullMazeLevelCount = maze.Chunks.Sum(x => x.Height);
         BuildMaze(maze);
         MovePlaeyerToStartPoint();
+    }
+
+    private GenerationWeights GetGenerationWeights(GenerationWeightsType generationWeightsType)
+    {
+        switch (generationWeightsType)
+        {
+            case GenerationWeightsType.GenericBuilding:
+                return GenerationWeights.GenericBuilding();
+            case GenerationWeightsType.FullRandom:
+                return GenerationWeights.FullRandom();
+            case GenerationWeightsType.StairsEveryWhere:
+                return GenerationWeights.StairsEveryWhere();
+            default:
+                throw new NotImplementedException();
+        }
     }
 
     private void MovePlaeyerToStartPoint()
@@ -61,14 +99,26 @@ public class MazeBuilder : MonoBehaviour
 
     private void BuildMaze(Maze maze)
     {
-        for (int z = 0; z < maze.Height; z++)
+        var drawedLevels = 0;
+        for (int chunkIndex = maze.Chunks.Count - 1; chunkIndex >= 0; chunkIndex--)
         {
-            var level = new GameObject($"Level {z}");
-            for (int y = 0; y < maze.Width; y++)
+            var chunk = maze.Chunks[chunkIndex];
+            BuildChunk(chunk, drawedLevels, chunkIndex);
+            drawedLevels += chunk.Height;
+        }
+    }
+
+    private void BuildChunk(Chunk chunk, int drawedLevels, int chunkIndex)
+    {
+        for (int z = 0; z < chunk.Height; z++)
+        {
+            var fullLevel = drawedLevels + z;
+            var level = new GameObject($"Level {z} ({fullLevel})");
+            for (int y = 0; y < chunk.Width; y++)
             {
-                for (int x = 0; x < maze.Length; x++)
+                for (int x = 0; x < chunk.Length; x++)
                 {
-                    var room = BuildRoom(maze[x, y, z]);
+                    var room = BuildRoom(chunk[x, y, z], drawedLevels, chunkIndex);
                     room.transform.SetParent(level.transform, false);
                 }
             }
@@ -76,9 +126,10 @@ public class MazeBuilder : MonoBehaviour
         }
     }
 
-    private GameObject BuildRoom(Cell cell)
+    private GameObject BuildRoom(Cell cell, int drawedLevels, int chunkIndex)
     {
-        var room = new GameObject($"Room[{cell.X}, {cell.Y}, {cell.Z}]");
+        var zMargin = drawedLevels + cell.Z;
+        var room = new GameObject($"Room[{cell.X}, {cell.Y}, {cell.Z} ({zMargin})]");
         if (cell.InnerPart != InnerPart.None)
         {
             switch (cell.InnerPart)
@@ -87,39 +138,43 @@ public class MazeBuilder : MonoBehaviour
                 case InnerPart.StairFromNorthToSouth:
                 case InnerPart.StairFromWestToEast:
                 case InnerPart.StairFromEastToWest:
-                    var stair = BuildStair(cell.X, cell.Y, cell.Z, cell.InnerPart);
+                    var stair = BuildStair(cell.X, cell.Y, zMargin, cell.InnerPart);
                     stair.transform.SetParent(room.transform, false);
                     break;
                 case InnerPart.Exit:
-                    var exit = BuildExit(cell.X, cell.Y, cell.Z);
+                    var exit = BuildExit(cell.X, cell.Y, zMargin);
                     exit.transform.SetParent(room.transform, false);
+                    break;
+                case InnerPart.ExitFromChunk:
+                    var exitFromChunk = BuildExitFromChunk(cell.X, cell.Y, zMargin);
+                    exitFromChunk.transform.SetParent(room.transform, false);
                     break;
                 default:
                     Debug.LogWarning($"Uknown InnetPart {cell.InnerPart}");
                     break;
             }
-            
+
         }
 
         var wallType = cell.Wall;
         if (wallType.HasFlag(WallType.North))
         {
-            var wall = BuildWallNorthSouth(cell.X, cell.Y + 1, cell.Z);
+            var wall = BuildWallNorthSouth(cell.X, cell.Y + 1, zMargin, chunkIndex);
             wall.transform.SetParent(room.transform, false);
         }
         if (wallType.HasFlag(WallType.East))
         {
-            var wall = BuildWallEastWest(cell.X + 1, cell.Y, cell.Z);
+            var wall = BuildWallEastWest(cell.X + 1, cell.Y, zMargin, chunkIndex);
             wall.transform.SetParent(room.transform, false);
         }
         if (wallType.HasFlag(WallType.South))
         {
-            var wall = BuildWallNorthSouth(cell.X, cell.Y, cell.Z);
+            var wall = BuildWallNorthSouth(cell.X, cell.Y, zMargin, chunkIndex);
             wall.transform.SetParent(room.transform, false);
         }
         if (wallType.HasFlag(WallType.West))
         {
-            var wall = BuildWallEastWest(cell.X, cell.Y, cell.Z);
+            var wall = BuildWallEastWest(cell.X, cell.Y, zMargin, chunkIndex);
             wall.transform.SetParent(room.transform, false);
         }
 
@@ -127,17 +182,19 @@ public class MazeBuilder : MonoBehaviour
         // For now just a HACK IT ^_^
         // Do not build one of the roof.
         // For now it will enter to the maze
-        if (cell.X == 0 && cell.Y == 0 && cell.Z == Height - 1)
+        //if (cell.X == 0 && cell.Y == 0 && zMargin == Height - 1)
+        //{
+        //    // do nothing to haven't roof in one point
+        //}
+        //else
+        //{
+
+        //}
+
+        if (wallType.HasFlag(WallType.Roof))
         {
-            // do nothing to haven't roof in one point
-        }
-        else
-        {
-            if (wallType.HasFlag(WallType.Roof))
-            {
-                var roof = BuildRoof(cell.X, cell.Y, cell.Z);
-                roof.transform.SetParent(room.transform, false);
-            }
+            var roof = BuildRoof(cell.X, cell.Y, zMargin, chunkIndex);
+            roof.transform.SetParent(room.transform, false);
         }
 
         //WriteTextToRoom(room, cell);
@@ -166,9 +223,9 @@ public class MazeBuilder : MonoBehaviour
         //}
     }
 
-    private GameObject BuildWallEastWest(int x, int y, int z)
+    private GameObject BuildWallEastWest(int x, int y, int z, int chunkIndex)
     {
-        var wall = CreateBaseWall(x, y, z);
+        var wall = CreateBaseWall(x, y, z, chunkIndex);
         wall.transform.Rotate(0, 180, 0);
         wall.transform.position = new Vector3(
             DefaultXPosition(x) - HALF_WALL_SIZE, //x * WALL_SIZE,
@@ -178,9 +235,9 @@ public class MazeBuilder : MonoBehaviour
         return wall;
     }
 
-    private GameObject BuildWallNorthSouth(int x, int y, int z)
+    private GameObject BuildWallNorthSouth(int x, int y, int z, int chunkIndex)
     {
-        var wall = CreateBaseWall(x, y, z);
+        var wall = CreateBaseWall(x, y, z, chunkIndex);
         wall.transform.Rotate(0, 90, 0);
 
         wall.transform.position = new Vector3(
@@ -190,9 +247,9 @@ public class MazeBuilder : MonoBehaviour
         return wall;
     }
 
-    private GameObject BuildRoof(int x, int y, int z)
+    private GameObject BuildRoof(int x, int y, int z, int chunkIndex)
     {
-        var roof = CreateBaseWall(x, y, z);
+        var roof = CreateBaseWall(x, y, z, chunkIndex);
 
         roof.transform.Rotate(0, 0, 90);
 
@@ -243,27 +300,55 @@ public class MazeBuilder : MonoBehaviour
         return exit;
     }
 
-    private GameObject CreateBaseWall(int x, int y, int z)
+    private GameObject BuildExitFromChunk(int x, int y, int z)
+    {
+        var exitFromChunk = Instantiate(ExitFromChunkTemplate);
+
+        exitFromChunk.transform.position = new Vector3(
+            DefaultXPosition(x) - HALF_WALL_SIZE,
+            DefaultYPosition(z) - HALF_WALL_SIZE,
+            DefaultZPosition(y));
+        return exitFromChunk;
+    }
+
+    private GameObject CreateBaseWall(int x, int y, int z, int chunkIndex)
     {
         var wall = Instantiate(WallTemplate);
+
         var baseTextObject = wall
             .transform.Find("Canvas")
             .transform.Find("Text");
         var textMeshPro = baseTextObject.GetComponent<TextMeshProUGUI>();
         textMeshPro.text = $"[{x}, {y}, {z}]";
+
+        var material = GetMaterial(chunkIndex);
+        wall.GetComponent<Renderer>().material = material;
+
         return wall;
+    }
+
+    private Material GetMaterial(int chunkIndex)
+    {
+        if (chunkIndex > 4)
+        {
+            chunkIndex = 4;
+        }
+
+        var materialPath = materialBasePath + $"/Chunk{chunkIndex}";
+        Material loadedMaterial = Resources.Load<Material>(materialPath);
+        return loadedMaterial;
     }
 
     private float DefaultXPosition(int x)
     {
         return x * WALL_SIZE + HALF_WALL_SIZE;
     }
-    
+
     private float DefaultYPosition(int z)
     {
         return z * WALL_SIZE + HALF_WALL_SIZE;
     }
-    
+
     private float DefaultZPosition(int y)
     {
         return y * WALL_SIZE + zMargin;

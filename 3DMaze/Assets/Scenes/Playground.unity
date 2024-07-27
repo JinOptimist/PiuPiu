@@ -1100,10 +1100,12 @@ MonoBehaviour:
     type: 3}
   ExitTemplate: {fileID: 9008034944193708464, guid: ceea4a67ddc73b649a2a1bc912e37735,
     type: 3}
+  ExitFromChunkTemplate: {fileID: 549053579946313144, guid: 9eec2792af2e28c42a6464d6e3c8e8d0,
+    type: 3}
   Player: {fileID: 239065251}
-  Length: 3
+  Length: 8
   Width: 4
-  Height: 2
+  Height: 15
 --- !u!4 &1817736029
 Transform:
   m_ObjectHideFlags: 0

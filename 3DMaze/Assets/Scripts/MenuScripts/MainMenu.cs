@@ -1,5 +1,4 @@
-using Assets.GameData;
-using MazeGenerator.Models.GenerationModels;
+using Assets.Scripts.Smile;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -7,30 +6,32 @@ public class MainMenu : MonoBehaviour
 {
     public void StartEasyGame()
     {
-        MazeParameter.Length = 3;
-        MazeParameter.Width = 3;
-        MazeParameter.Height = 3;
-        MazeParameter.Seed = 100;
-        MazeParameter.GenerationWeights = GenerationWeights.GenericBuilding();
-        MazeParameter.ExitLocation = new System.Numerics.Vector3(0, 2, 0);
+        PlayerPrefs.SetInt("Length", 3);
+        PlayerPrefs.SetInt("Width", 3);
+        PlayerPrefs.SetInt("Height", 3);
+        PlayerPrefs.SetInt("Seed", 100);
+        PlayerPrefs.SetInt("GenerationWeightsType", (int)GenerationWeightsType.GenericBuilding);
+
         SceneManager.LoadScene("Playground");
     }
 
     public void StartMediumGame()
     {
-        MazeParameter.Length = 5;
-        MazeParameter.Width = 5;
-        MazeParameter.Height = 5;
-        MazeParameter.GenerationWeights = GenerationWeights.FullRandom();
+        PlayerPrefs.SetInt("Length", 5);
+        PlayerPrefs.SetInt("Width", 5);
+        PlayerPrefs.SetInt("Height", 5);
+        PlayerPrefs.SetInt("GenerationWeightsType", (int)GenerationWeightsType.FullRandom);
+
         SceneManager.LoadScene("Playground");
     }
 
     public void StartHardGame()
     {
-        MazeParameter.Length = 10;
-        MazeParameter.Width = 10;
-        MazeParameter.Height = 10;
-        MazeParameter.GenerationWeights = GenerationWeights.StairsEveryWhere();
+        PlayerPrefs.SetInt("Length", 8);
+        PlayerPrefs.SetInt("Width", 5);
+        PlayerPrefs.SetInt("Height", 15);
+        PlayerPrefs.SetInt("GenerationWeightsType", (int)GenerationWeightsType.StairsEveryWhere);
+
         SceneManager.LoadScene("Playground");
     }
 
