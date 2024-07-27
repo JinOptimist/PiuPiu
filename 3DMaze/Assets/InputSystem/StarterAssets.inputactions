@@ -231,7 +231,7 @@
                 {
                     "name": "",
                     "id": "504350db-8e66-4ef5-a3ec-a9b264629be7",
-                    "path": "<Keyboard>/escape",
+                    "path": "<Keyboard>/tab",
                     "interactions": "",
                     "processors": "",
                     "groups": "KeyboardMouse",
