@@ -20,6 +20,7 @@ public class MainMenu : MonoBehaviour
         PlayerPrefs.SetInt("Length", 5);
         PlayerPrefs.SetInt("Width", 5);
         PlayerPrefs.SetInt("Height", 5);
+        PlayerPrefs.DeleteKey("Seed");
         PlayerPrefs.SetInt("GenerationWeightsType", (int)GenerationWeightsType.FullRandom);
 
         SceneManager.LoadScene("Playground");
@@ -30,6 +31,7 @@ public class MainMenu : MonoBehaviour
         PlayerPrefs.SetInt("Length", 8);
         PlayerPrefs.SetInt("Width", 5);
         PlayerPrefs.SetInt("Height", 15);
+        PlayerPrefs.DeleteKey("Seed");
         PlayerPrefs.SetInt("GenerationWeightsType", (int)GenerationWeightsType.StairsEveryWhere);
 
         SceneManager.LoadScene("Playground");
