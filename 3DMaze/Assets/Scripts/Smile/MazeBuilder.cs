@@ -16,6 +16,7 @@ public class MazeBuilder : MonoBehaviour
     public GameObject StairTemplate;
     public GameObject ExitTemplate;
     public GameObject ExitFromChunkTemplate;
+    public GameObject RoomTrigger;
 
     public GameObject Player;
 
@@ -24,7 +25,6 @@ public class MazeBuilder : MonoBehaviour
     public int Height;
 
     private string materialBasePath = "Materials/WallByLevels";
-
 
     private const int WALL_SIZE = 4;
     private const int HALF_WALL_SIZE = WALL_SIZE / 2;
@@ -65,10 +65,14 @@ public class MazeBuilder : MonoBehaviour
         var maze = generator.Generate(Length, Width, Height,
             startPoint: new System.Numerics.Vector2(0, 0),
             weights: generationWeights,
-            seed: seed
-            );
+            seed: seed);
+
+        PlayerPrefs.SetInt("Seed", maze.Seed);
+        Debug.Log($"Seed: {maze.Seed}");
+
         zMargin = -1 * (maze.MaxWidth + 1) * WALL_SIZE;
         fullMazeLevelCount = maze.Chunks.Sum(x => x.Height);
+
         BuildMaze(maze);
         MovePlaeyerToStartPoint();
     }
@@ -153,7 +157,6 @@ public class MazeBuilder : MonoBehaviour
                     Debug.LogWarning($"Uknown InnetPart {cell.InnerPart}");
                     break;
             }
-
         }
 
         var wallType = cell.Wall;
@@ -178,19 +181,6 @@ public class MazeBuilder : MonoBehaviour
             wall.transform.SetParent(room.transform, false);
         }
 
-        // TODO Create an Enter to the maze
-        // For now just a HACK IT ^_^
-        // Do not build one of the roof.
-        // For now it will enter to the maze
-        //if (cell.X == 0 && cell.Y == 0 && zMargin == Height - 1)
-        //{
-        //    // do nothing to haven't roof in one point
-        //}
-        //else
-        //{
-
-        //}
-
         if (wallType.HasFlag(WallType.Roof))
         {
             var roof = BuildRoof(cell.X, cell.Y, zMargin, chunkIndex);
@@ -198,8 +188,25 @@ public class MazeBuilder : MonoBehaviour
         }
 
         //WriteTextToRoom(room, cell);
+        var trigger = BuildRoomTrigger(cell.X, cell.Y, zMargin);
+        trigger.transform.SetParent(room.transform, false);
 
         return room;
+    }
+
+    private GameObject BuildRoomTrigger(int x, int y, int z)
+    {
+        var roomTrigger = Instantiate(RoomTrigger);
+
+        var script = roomTrigger.GetComponent<RoomTrigger>();
+        script.roomCoordinate = $"[{x}, {y}, {z}]";
+
+        roomTrigger.transform.position = new Vector3(
+            DefaultXPosition(x),
+            DefaultYPosition(z),
+            DefaultZPosition(y));
+
+        return roomTrigger;
     }
 
     private void WriteTextToRoom(GameObject room, Cell cell)

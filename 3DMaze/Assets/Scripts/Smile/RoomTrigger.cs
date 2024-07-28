@@ -1,13 +1,19 @@
 using TMPro;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
-public class ExitTrigger : MonoBehaviour
+public class RoomTrigger : MonoBehaviour
 {
+    public string roomCoordinate;
+
+    private TextMeshProUGUI roomText;
     private TextMeshProUGUI scoreText;
 
     private void Start()
     {
+        roomText = GameObject
+            .Find("/PlayerLayout/Room Panel/RoomNumberText")
+            .GetComponent<TextMeshProUGUI>();
+
         scoreText = GameObject
             .Find("/PlayerLayout/Score Panel/Score")
             .GetComponent<TextMeshProUGUI>();
@@ -17,18 +23,12 @@ public class ExitTrigger : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            var countOfLevels = GameObject
-                .Find("/Maze")
-                .transform
-                .childCount;
+            roomText.text = roomCoordinate;
 
             var score = PlayerPrefs.GetInt("Score");
-            score += 100 * countOfLevels;
+            score++;
             PlayerPrefs.SetInt("Score", score);
             scoreText.text = score.ToString();
-
-            Debug.Log("Exit!");
-            SceneManager.LoadScene("StartMenu");
         }
     }
 }
