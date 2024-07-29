@@ -29,6 +29,8 @@ public class RoomTrigger : MonoBehaviour
             score++;
             PlayerPrefs.SetInt("Score", score);
             scoreText.text = score.ToString();
+
+            PlayerPathStore.Path.Add(gameObject);
         }
     }
 }

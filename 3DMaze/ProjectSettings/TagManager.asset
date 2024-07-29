@@ -5,6 +5,8 @@ TagManager:
   serializedVersion: 2
   tags:
   - CinemachineTarget
+  - Wall
+  - TriggerRoom
   layers:
   - Default
   - TransparentFX
@@ -37,8 +39,11 @@ TagManager:
   - 
   - 
   - 
-  - 
+  - SimplifiedMaze
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: MazeLayer
+    uniqueID: 1276142607
     locked: 0

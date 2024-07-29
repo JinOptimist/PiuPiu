@@ -13,9 +13,9 @@ GameObject:
   - component: {fileID: 6839910468771822608}
   - component: {fileID: 3852406805862484943}
   - component: {fileID: 475846857183710925}
-  m_Layer: 0
+  m_Layer: 31
   m_Name: TriggerRoom
-  m_TagString: Untagged
+  m_TagString: TriggerRoom
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

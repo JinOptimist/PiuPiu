@@ -74,6 +74,8 @@ public class MazeBuilder : MonoBehaviour
         fullMazeLevelCount = maze.Chunks.Sum(x => x.Height);
 
         BuildMaze(maze);
+
+        PlayerPathStore.Path = new System.Collections.Generic.List<GameObject>();
         MovePlaeyerToStartPoint();
     }
 
@@ -118,6 +120,7 @@ public class MazeBuilder : MonoBehaviour
         {
             var fullLevel = drawedLevels + z;
             var level = new GameObject($"Level {z} ({fullLevel})");
+            level.transform.position = new Vector3(0, DefaultYPosition(fullLevel), 0);
             for (int y = 0; y < chunk.Width; y++)
             {
                 for (int x = 0; x < chunk.Length; x++)
@@ -134,6 +137,11 @@ public class MazeBuilder : MonoBehaviour
     {
         var zMargin = drawedLevels + cell.Z;
         var room = new GameObject($"Room[{cell.X}, {cell.Y}, {cell.Z} ({zMargin})]");
+        room.transform.position = new Vector3(
+            DefaultXPosition(cell.X),
+            0, //DefaultYPosition(cell.Z),//DefaultYPosition(zMargin),
+            DefaultZPosition(cell.Y));
+
         if (cell.InnerPart != InnerPart.None)
         {
             switch (cell.InnerPart)
@@ -142,16 +150,19 @@ public class MazeBuilder : MonoBehaviour
                 case InnerPart.StairFromNorthToSouth:
                 case InnerPart.StairFromWestToEast:
                 case InnerPart.StairFromEastToWest:
-                    var stair = BuildStair(cell.X, cell.Y, zMargin, cell.InnerPart);
+                    var stair = BuildStair(cell.X, cell.Y, cell.Z, cell.InnerPart);
                     stair.transform.SetParent(room.transform, false);
                     break;
                 case InnerPart.Exit:
-                    var exit = BuildExit(cell.X, cell.Y, zMargin);
+                    var exit = BuildExit(cell.X, cell.Y, cell.Z);
                     exit.transform.SetParent(room.transform, false);
                     break;
                 case InnerPart.ExitFromChunk:
-                    var exitFromChunk = BuildExitFromChunk(cell.X, cell.Y, zMargin);
+                    var exitFromChunk = BuildExitFromChunk(cell.X, cell.Y, cell.Z);
                     exitFromChunk.transform.SetParent(room.transform, false);
+                    break;
+                case InnerPart.Start:
+                    // Do nothing, just want to remember where I started
                     break;
                 default:
                     Debug.LogWarning($"Uknown InnetPart {cell.InnerPart}");
@@ -162,33 +173,33 @@ public class MazeBuilder : MonoBehaviour
         var wallType = cell.Wall;
         if (wallType.HasFlag(WallType.North))
         {
-            var wall = BuildWallNorthSouth(cell.X, cell.Y + 1, zMargin, chunkIndex);
+            var wall = BuildWallNorth(cell.X, cell.Y, cell.Z, chunkIndex);
             wall.transform.SetParent(room.transform, false);
         }
         if (wallType.HasFlag(WallType.East))
         {
-            var wall = BuildWallEastWest(cell.X + 1, cell.Y, zMargin, chunkIndex);
+            var wall = BuildWallEast(cell.X, cell.Y, cell.Z, chunkIndex);
             wall.transform.SetParent(room.transform, false);
         }
         if (wallType.HasFlag(WallType.South))
         {
-            var wall = BuildWallNorthSouth(cell.X, cell.Y, zMargin, chunkIndex);
+            var wall = BuildWallSouth(cell.X, cell.Y, cell.Z, chunkIndex);
             wall.transform.SetParent(room.transform, false);
         }
         if (wallType.HasFlag(WallType.West))
         {
-            var wall = BuildWallEastWest(cell.X, cell.Y, zMargin, chunkIndex);
+            var wall = BuildWallWest(cell.X, cell.Y, cell.Z, chunkIndex);
             wall.transform.SetParent(room.transform, false);
         }
 
         if (wallType.HasFlag(WallType.Roof))
         {
-            var roof = BuildRoof(cell.X, cell.Y, zMargin, chunkIndex);
+            var roof = BuildRoof(cell.X, cell.Y, cell.Z, chunkIndex);
             roof.transform.SetParent(room.transform, false);
         }
 
         //WriteTextToRoom(room, cell);
-        var trigger = BuildRoomTrigger(cell.X, cell.Y, zMargin);
+        var trigger = BuildRoomTrigger(cell.X, cell.Y, cell.Z);
         trigger.transform.SetParent(room.transform, false);
 
         return room;
@@ -202,9 +213,9 @@ public class MazeBuilder : MonoBehaviour
         script.roomCoordinate = $"[{x}, {y}, {z}]";
 
         roomTrigger.transform.position = new Vector3(
-            DefaultXPosition(x),
-            DefaultYPosition(z),
-            DefaultZPosition(y));
+            0,
+            0,
+            0);
 
         return roomTrigger;
     }
@@ -230,27 +241,51 @@ public class MazeBuilder : MonoBehaviour
         //}
     }
 
-    private GameObject BuildWallEastWest(int x, int y, int z, int chunkIndex)
+    private GameObject BuildWallWest(int x, int y, int z, int chunkIndex)
     {
         var wall = CreateBaseWall(x, y, z, chunkIndex);
         wall.transform.Rotate(0, 180, 0);
         wall.transform.position = new Vector3(
-            DefaultXPosition(x) - HALF_WALL_SIZE, //x * WALL_SIZE,
-            DefaultYPosition(z),
-            DefaultZPosition(y));
+            0 - HALF_WALL_SIZE, //x * WALL_SIZE,
+            0,
+            0);
 
         return wall;
     }
 
-    private GameObject BuildWallNorthSouth(int x, int y, int z, int chunkIndex)
+    private GameObject BuildWallEast(int x, int y, int z, int chunkIndex)
+    {
+        var wall = CreateBaseWall(x, y, z, chunkIndex);
+        wall.transform.Rotate(0, 180, 0);
+        wall.transform.position = new Vector3(
+            WALL_SIZE - HALF_WALL_SIZE, //x * WALL_SIZE,
+            0,
+            0);
+
+        return wall;
+    }
+
+    private GameObject BuildWallSouth(int x, int y, int z, int chunkIndex)
     {
         var wall = CreateBaseWall(x, y, z, chunkIndex);
         wall.transform.Rotate(0, 90, 0);
 
         wall.transform.position = new Vector3(
-            DefaultXPosition(x),
-            DefaultYPosition(z),
-            DefaultZPosition(y) - HALF_WALL_SIZE);
+            0,
+            0,
+            0 - HALF_WALL_SIZE);
+        return wall;
+    }
+
+    private GameObject BuildWallNorth(int x, int y, int z, int chunkIndex)
+    {
+        var wall = CreateBaseWall(x, y, z, chunkIndex);
+        wall.transform.Rotate(0, 90, 0);
+
+        wall.transform.position = new Vector3(
+            0,
+            0,
+            WALL_SIZE - HALF_WALL_SIZE);
         return wall;
     }
 
@@ -261,9 +296,9 @@ public class MazeBuilder : MonoBehaviour
         roof.transform.Rotate(0, 0, 90);
 
         roof.transform.position = new Vector3(
-            DefaultXPosition(x),
-            DefaultYPosition(z) + HALF_WALL_SIZE,
-            DefaultZPosition(y));
+            0,
+            0 + HALF_WALL_SIZE,
+            0);
 
         return roof;
     }
@@ -289,9 +324,9 @@ public class MazeBuilder : MonoBehaviour
         }
 
         stair.transform.position = new Vector3(
-            DefaultXPosition(x),
-            DefaultYPosition(z),
-            DefaultZPosition(y));
+            0,
+            0,
+            0);
 
         return stair;
     }
@@ -300,10 +335,7 @@ public class MazeBuilder : MonoBehaviour
     {
         var exit = Instantiate(ExitTemplate);
 
-        exit.transform.position = new Vector3(
-            DefaultXPosition(x),
-            DefaultYPosition(z),
-            DefaultZPosition(y));
+        exit.transform.position = new Vector3(0, 0, 0);
         return exit;
     }
 
@@ -312,9 +344,9 @@ public class MazeBuilder : MonoBehaviour
         var exitFromChunk = Instantiate(ExitFromChunkTemplate);
 
         exitFromChunk.transform.position = new Vector3(
-            DefaultXPosition(x) - HALF_WALL_SIZE,
-            DefaultYPosition(z) - HALF_WALL_SIZE,
-            DefaultZPosition(y));
+            0 - HALF_WALL_SIZE,
+            0 - HALF_WALL_SIZE,
+            0);
         return exitFromChunk;
     }
 
@@ -322,11 +354,11 @@ public class MazeBuilder : MonoBehaviour
     {
         var wall = Instantiate(WallTemplate);
 
-        var baseTextObject = wall
-            .transform.Find("Canvas")
-            .transform.Find("Text");
-        var textMeshPro = baseTextObject.GetComponent<TextMeshProUGUI>();
-        textMeshPro.text = $"[{x}, {y}, {z}]";
+        //var baseTextObject = wall
+        //    .transform.Find("Canvas")
+        //    .transform.Find("Text");
+        //var textMeshPro = baseTextObject.GetComponent<TextMeshProUGUI>();
+        //textMeshPro.text = $"[{x}, {y}, {z}]";
 
         var material = GetMaterial(chunkIndex);
         wall.GetComponent<Renderer>().material = material;
