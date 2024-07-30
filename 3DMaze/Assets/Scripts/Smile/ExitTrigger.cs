@@ -12,6 +12,8 @@ public class ExitTrigger : MonoBehaviour
     public Vector3 cameraMargin = new Vector3(-12, 12, -12);
     public int animationDuration = 700;
 
+    private bool isActiveAnimation = false;
+
     private void Start()
     {
         scoreText = GameObject
@@ -21,8 +23,9 @@ public class ExitTrigger : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player"))
+        if (other.CompareTag("Player") && !isActiveAnimation)
         {
+            isActiveAnimation = true;
             UpdateScore();
 
             ShowPathAndRenturnToTheMainMenuAsync();
