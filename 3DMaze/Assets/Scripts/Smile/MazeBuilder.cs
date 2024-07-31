@@ -154,8 +154,8 @@ public class MazeBuilder : MonoBehaviour
                     stair.transform.SetParent(room.transform, false);
                     break;
                 case InnerPart.Exit:
-                    //var exit = BuildExit(cell.X, cell.Y, cell.Z);
-                    //exit.transform.SetParent(room.transform, false);
+                    var exit = BuildExit(cell.X, cell.Y, cell.Z);
+                    exit.transform.SetParent(room.transform, false);
                     break;
                 case InnerPart.ExitFromChunk:
                     var exitFromChunk = BuildExitFromChunk(cell.X, cell.Y, cell.Z);
