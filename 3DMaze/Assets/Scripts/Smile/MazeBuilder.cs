@@ -1,10 +1,9 @@
 using Assets.Scripts.Smile;
-using MazeGenerator;
+using MazeGenerator.Generators;
 using MazeGenerator.Models.GenerationModels;
 using MazeGenerator.Models.MazeModels;
 using System;
 using System.Linq;
-using TMPro;
 using UnityEngine;
 using WallType = MazeGenerator.Models.MazeModels.Wall;
 
@@ -41,6 +40,7 @@ public class MazeBuilder : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        PlayerPrefs.SetInt("Score", 1);
         if (PlayerPrefs.HasKey("Length"))
         {
             Length = PlayerPrefs.GetInt("Length");
@@ -61,7 +61,7 @@ public class MazeBuilder : MonoBehaviour
             : GenerationWeightsType.GenericBuilding;
         var generationWeights = GetGenerationWeights(generationWeightsType);
 
-        var generator = new Generator();
+        var generator = new GeneratorBaseOnGraph();
         var maze = generator.Generate(Length, Width, Height,
             startPoint: new System.Numerics.Vector2(0, 0),
             weights: generationWeights,
@@ -146,16 +146,16 @@ public class MazeBuilder : MonoBehaviour
         {
             switch (cell.InnerPart)
             {
-                case InnerPart.StairFromSouthToNorth:
-                case InnerPart.StairFromNorthToSouth:
-                case InnerPart.StairFromWestToEast:
-                case InnerPart.StairFromEastToWest:
+                case InnerPart.StairUpOnNorth:
+                case InnerPart.StairUpOnSouth:
+                case InnerPart.StairUpOnEast:
+                case InnerPart.StairUpOnWest:
                     var stair = BuildStair(cell.X, cell.Y, cell.Z, cell.InnerPart);
                     stair.transform.SetParent(room.transform, false);
                     break;
                 case InnerPart.Exit:
-                    var exit = BuildExit(cell.X, cell.Y, cell.Z);
-                    exit.transform.SetParent(room.transform, false);
+                    //var exit = BuildExit(cell.X, cell.Y, cell.Z);
+                    //exit.transform.SetParent(room.transform, false);
                     break;
                 case InnerPart.ExitFromChunk:
                     var exitFromChunk = BuildExitFromChunk(cell.X, cell.Y, cell.Z);
@@ -309,16 +309,16 @@ public class MazeBuilder : MonoBehaviour
 
         switch (stairType)
         {
-            case InnerPart.StairFromSouthToNorth:
+            case InnerPart.StairUpOnNorth:
                 stair.transform.Rotate(0, 0, 0);
                 break;
-            case InnerPart.StairFromNorthToSouth:
+            case InnerPart.StairUpOnSouth:
                 stair.transform.Rotate(0, 180, 0);
                 break;
-            case InnerPart.StairFromWestToEast:
+            case InnerPart.StairUpOnEast:
                 stair.transform.Rotate(0, 90, 0);
                 break;
-            case InnerPart.StairFromEastToWest:
+            case InnerPart.StairUpOnWest:
                 stair.transform.Rotate(0, -90, 0);
                 break;
         }
