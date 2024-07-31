@@ -26,6 +26,7 @@ public class ExitTrigger : MonoBehaviour
         if (other.CompareTag("Player") && !isActiveAnimation)
         {
             isActiveAnimation = true;
+
             UpdateScore();
 
             ShowPathAndRenturnToTheMainMenuAsync();
@@ -52,12 +53,10 @@ public class ExitTrigger : MonoBehaviour
         AllRoomTriggersAreVisible();
         HighlightPath();
 
-        await Task.Delay(PlayerPathStore.Path.Count * animationDuration);
+        await Task.Delay((PlayerPathStore.Path.Count + 1) * animationDuration);
 
-        Debug.Log("Exit!");
-        SceneManager.LoadScene("StartMenu");
+        //SceneManager.LoadScene("StartMenu");
     }
-
     
     private void MoveCameraToLookAtBuildingOutside()
     {
@@ -111,13 +110,17 @@ public class ExitTrigger : MonoBehaviour
     {
         var visitedMaterialPath = "Materials/ShowPath/Visited";
         var visitedMaterial = Resources.Load<Material>(visitedMaterialPath);
+        var activeMaterialPath = "Materials/ShowPath/Active";
+        var activeMaterial = Resources.Load<Material>(activeMaterialPath);
 
         var mainCamera = GameObject.Find("MainCamera");
-        for (int i = 0; i < PlayerPathStore.Path.Count; i++)
+        for (int i = 1; i < PlayerPathStore.Path.Count; i++)
         {
+            var prevRoom = PlayerPathStore.Path[i - 1];
             var room = PlayerPathStore.Path[i];
 
-            room.GetComponent<Renderer>().material = visitedMaterial;
+            prevRoom.GetComponent<Renderer>().material = visitedMaterial;
+            room.GetComponent<Renderer>().material = activeMaterial;
 
             var roomPosition = room.transform.position;
             var targetPosition = roomPosition + cameraMargin;
@@ -125,7 +128,7 @@ public class ExitTrigger : MonoBehaviour
             StartCoroutine(MoveCamera(
                 mainCamera,
                 targetPosition,
-                animationDuration / 1000));
+                1f * animationDuration / 1000));
 
             await Task.Delay(animationDuration);
         }
