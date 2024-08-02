@@ -1687,12 +1687,14 @@ MonoBehaviour:
     type: 3}
   ExitFromChunkTemplate: {fileID: 549053579946313144, guid: 9eec2792af2e28c42a6464d6e3c8e8d0,
     type: 3}
+  LampTemplate: {fileID: 8873512719586759289, guid: b0aa6e6b314e45d47893a11ed30dc2ca,
+    type: 3}
   RoomTrigger: {fileID: 1214153847992283588, guid: 00809b80524925e4daf201d8326dda8a,
     type: 3}
   Player: {fileID: 239065251}
-  Length: 5
-  Width: 5
-  Height: 6
+  Length: 4
+  Width: 4
+  Height: 15
 --- !u!4 &1817736029
 Transform:
   m_ObjectHideFlags: 0

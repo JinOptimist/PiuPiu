@@ -15,6 +15,7 @@ public class MazeBuilder : MonoBehaviour
     public GameObject StairTemplate;
     public GameObject ExitTemplate;
     public GameObject ExitFromChunkTemplate;
+    public GameObject LampTemplate;
     public GameObject RoomTrigger;
 
     public GameObject Player;
@@ -173,36 +174,52 @@ public class MazeBuilder : MonoBehaviour
         var wallType = cell.Wall;
         if (wallType.HasFlag(WallType.North))
         {
-            var wall = BuildWallNorth(cell.X, cell.Y, cell.Z, chunkIndex);
+            var wall = BuildWallNorth(chunkIndex);
             wall.transform.SetParent(room.transform, false);
         }
         if (wallType.HasFlag(WallType.East))
         {
-            var wall = BuildWallEast(cell.X, cell.Y, cell.Z, chunkIndex);
+            var wall = BuildWallEast(chunkIndex);
             wall.transform.SetParent(room.transform, false);
         }
         if (wallType.HasFlag(WallType.South))
         {
-            var wall = BuildWallSouth(cell.X, cell.Y, cell.Z, chunkIndex);
+            var wall = BuildWallSouth(chunkIndex);
             wall.transform.SetParent(room.transform, false);
         }
         if (wallType.HasFlag(WallType.West))
         {
-            var wall = BuildWallWest(cell.X, cell.Y, cell.Z, chunkIndex);
+            var wall = BuildWallWest(chunkIndex);
             wall.transform.SetParent(room.transform, false);
         }
 
         if (wallType.HasFlag(WallType.Roof))
         {
-            var roof = BuildRoof(cell.X, cell.Y, cell.Z, chunkIndex);
+            var roof = BuildRoof(chunkIndex);
             roof.transform.SetParent(room.transform, false);
+
+            // if cell is Deadend
+            if (chunkIndex > 2 && cell.NeighborsCount == 1)
+            {
+                var lamp = BuildLamp(chunkIndex);
+                lamp.transform.SetParent(room.transform, false);
+            }
         }
 
         //WriteTextToRoom(room, cell);
-        var trigger = BuildRoomTrigger(cell.X, cell.Y, cell.Z);
+        var trigger = BuildRoomTrigger(cell.X, cell.Y, zMargin);
         trigger.transform.SetParent(room.transform, false);
 
         return room;
+    }
+
+    private GameObject BuildLamp(int chunkIndex)
+    {
+        var lamp = Instantiate(LampTemplate);
+
+        // lamp.transform.position = new Vector3(0 - HALF_WALL_SIZE, 0, 0);
+
+        return lamp;
     }
 
     private GameObject BuildRoomTrigger(int x, int y, int z)
@@ -212,10 +229,7 @@ public class MazeBuilder : MonoBehaviour
         var script = roomTrigger.GetComponent<RoomTrigger>();
         script.roomCoordinate = $"[{x}, {y}, {z}]";
 
-        roomTrigger.transform.position = new Vector3(
-            0,
-            0,
-            0);
+        roomTrigger.transform.position = new Vector3(0, 0, 0);
 
         return roomTrigger;
     }
@@ -241,45 +255,39 @@ public class MazeBuilder : MonoBehaviour
         //}
     }
 
-    private GameObject BuildWallWest(int x, int y, int z, int chunkIndex)
+    private GameObject BuildWallWest(int chunkIndex)
     {
-        var wall = CreateBaseWall(x, y, z, chunkIndex);
+        var wall = CreateBaseWall(chunkIndex);
+
         wall.transform.Rotate(0, 180, 0);
-        wall.transform.position = new Vector3(
-            0 - HALF_WALL_SIZE, //x * WALL_SIZE,
-            0,
-            0);
+        wall.transform.position = new Vector3(0 - HALF_WALL_SIZE, 0, 0);
 
         return wall;
     }
 
-    private GameObject BuildWallEast(int x, int y, int z, int chunkIndex)
+    private GameObject BuildWallEast(int chunkIndex)
     {
-        var wall = CreateBaseWall(x, y, z, chunkIndex);
+        var wall = CreateBaseWall(chunkIndex);
+
         wall.transform.Rotate(0, 180, 0);
-        wall.transform.position = new Vector3(
-            WALL_SIZE - HALF_WALL_SIZE, //x * WALL_SIZE,
-            0,
-            0);
+        wall.transform.position = new Vector3(HALF_WALL_SIZE, 0, 0);
 
         return wall;
     }
 
-    private GameObject BuildWallSouth(int x, int y, int z, int chunkIndex)
+    private GameObject BuildWallSouth(int chunkIndex)
     {
-        var wall = CreateBaseWall(x, y, z, chunkIndex);
+        var wall = CreateBaseWall(chunkIndex);
+
         wall.transform.Rotate(0, 90, 0);
+        wall.transform.position = new Vector3(0, 0, 0 - HALF_WALL_SIZE);
 
-        wall.transform.position = new Vector3(
-            0,
-            0,
-            0 - HALF_WALL_SIZE);
         return wall;
     }
 
-    private GameObject BuildWallNorth(int x, int y, int z, int chunkIndex)
+    private GameObject BuildWallNorth(int chunkIndex)
     {
-        var wall = CreateBaseWall(x, y, z, chunkIndex);
+        var wall = CreateBaseWall(chunkIndex);
         wall.transform.Rotate(0, 90, 0);
 
         wall.transform.position = new Vector3(
@@ -289,16 +297,12 @@ public class MazeBuilder : MonoBehaviour
         return wall;
     }
 
-    private GameObject BuildRoof(int x, int y, int z, int chunkIndex)
+    private GameObject BuildRoof(int chunkIndex)
     {
-        var roof = CreateBaseWall(x, y, z, chunkIndex);
+        var roof = CreateBaseWall(chunkIndex);
 
         roof.transform.Rotate(0, 0, 90);
-
-        roof.transform.position = new Vector3(
-            0,
-            0 + HALF_WALL_SIZE,
-            0);
+        roof.transform.position = new Vector3(0, HALF_WALL_SIZE, 0);
 
         return roof;
     }
@@ -350,15 +354,15 @@ public class MazeBuilder : MonoBehaviour
         return exitFromChunk;
     }
 
-    private GameObject CreateBaseWall(int x, int y, int z, int chunkIndex)
+    private GameObject CreateBaseWall(int chunkIndex)
     {
         var wall = Instantiate(WallTemplate);
 
-        //var baseTextObject = wall
-        //    .transform.Find("Canvas")
-        //    .transform.Find("Text");
-        //var textMeshPro = baseTextObject.GetComponent<TextMeshProUGUI>();
-        //textMeshPro.text = $"[{x}, {y}, {z}]";
+        if (chunkIndex > 2)
+        {
+            var oldScale = wall.transform.localScale;
+            wall.transform.localScale = new Vector3(oldScale.x, WALL_SIZE, WALL_SIZE);
+        }
 
         var material = GetMaterial(chunkIndex);
         wall.GetComponent<Renderer>().material = material;
